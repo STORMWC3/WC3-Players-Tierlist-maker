@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tier List для игроков</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+  h1 { text-align: center; }
+  #tiers {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+  .tier {
+    background: #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    width: 150px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .tier h2 {
+    margin: 0 0 10px 0;
+  }
+  .player {
+    background: #fff;
+    margin: 4px 0;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: grab;
+    text-align: center;
+    user-select: none;
+    border: 1px solid #aaa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .player.dragging {
+    opacity: 0.5;
+  }
+  .player button {
+    margin-left: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #e74c3c;
+    border: none;
+    color: white;
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+  .player button:hover {
+    background: #c0392b;
+  }
+
+  #playersPool {
+    max-width: 90vw;
+    margin: 0 auto 20px auto;
+    background: #eee;
+    padding: 10px;
+    border-radius: 6px;
+    min-height: 200px;
+    max-height: 250px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 6px;
+  }
+  #playersPool h2 {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    text-align: center;
+  }
+
+  #buttons {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  button#resetBtn, button#exportBtn {
+    margin: 0 10px;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  button#resetBtn:hover, button#exportBtn:hover {
+    background-color: #ddd;
+  }
+
+  #addPlayerForm {
+    max-width: 320px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    gap: 8px;
+  }
+  #addPlayerForm input[type="text"] {
+    flex-grow: 1;
+    padding: 6px 8px;
+    font-size: 16px;
+  }
+  #addPlayerForm button {
+    padding: 6px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background: #27ae60;
+    color: white;
+  }
+  #addPlayerForm button:hover {
+    background: #1e8449;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Tier List для игроков</h1>
+
+<div id="tiers">
+  <div class="tier" data-tier="S"><h2>S</h2></div>
+  <div class="tier" data-tier="A"><h2>A+</h2></div>
+  <div class="tier" data-tier="A"><h2>A</h2></div>
+  <div class="tier" data-tier="B"><h2>B+</h2></div>
+  <div class="tier" data-tier="B"><h2>B</h2></div>
+  <div class="tier" data-tier="B"><h2>С+</h2></div>
+  <div class="tier" data-tier="C"><h2>C</h2></div>
+  <div class="tier" data-tier="D"><h2>D+</h2></div>
+  <div class="tier" data-tier="D"><h2>D</h2></div>
+  <div class="tier" data-tier="B"><h2>E+</h2></div>
+  <div class="tier" data-tier="B"><h2>E</h2></div>
+</div>
+
+<div id="addPlayerForm">
+  <input type="text" id="newPlayerName" placeholder="Добавить нового игрока..." />
+  <button id="addPlayerBtn">Добавить</button>
+</div>
+
+<div id="playersPool">
+  <h2>Игроки (перетащи в тир)</h2>
+</div>
+
+<div id="buttons">
+  <button id="resetBtn">Сбросить</button>
+  <button id="exportBtn">Экспортировать результат</button>
+</div>
+
+<h2>Экспортированный Tier List (JSON):</h2>
+<pre id="output"></pre>
+
+<script type="application/json" id="players-data">
+[
+"Happy",
+"Lyn",
+"Fortitude",
+"LabyRinth",
+"Eer0",
+"Kaho",
+"Starbuck",
+"Life",
+"FoCuS",
+"Moon",
+"LawLiet",
+"Sok",
+"ColorFul",
+"Infi",
+"RUNNING",
+"Soin",
+"Dise",
+"Jens",
+"Blade",
+"XiaoKK",
+"Fly100%",
+"Sini",
+"Foggy",
+"Leon",
+"Ice orc",
+"ReMinD",
+"EleGaNt",
+"HawK",
+"TH000",
+"Chaemiko",
+"War3Orcer0",
+"ToD",
+"Franzyzz",
+"ThorZaIN",
+"Sonik",
+"Pink",
+"Deathnote",
+"Pcg 123",
+"TiesioG",
+"Leqi",
+"Neytpoh",
+"국사무쌍",
+"Hazy",
+"PaTo",
+"XiaoKai",
+"Sheik",
+"Luna",
+"Inspired",
+"Toxi",
+"WudaoOC",
+"Cloud",
+"Cash",
+"Smurf",
+"DanGer",
+"Bizzare",
+"Invain",
+"FpXy",
+"JadeDark",
+"Wiz",
+"KraV",
+"Liuhua",
+"SoYma",
+"CaSpeND",
+"Guhi",
+"Teddster",
+"Drotaverine",
+"Edo",
+"TGW",
+"Fish",
+"Starshaped",
+"Tbc bm",
+"Biko",
+"SaysO",
+"Orcbrave",
+"Chanji",
+"KnOfF",
+"Kevin",
+"Tekko",
+"TiMofan",
+"Krasik",
+"Aspect",
+"SwordPuppy",
+"Lemes",
+"RaZZoRMaN",
+"Ag3nt",
+"D3xter",
+"ShaDai",
+"FiR",
+"Flopoks",
+"Cement",
+"BlaST9Z",
+"Grubby",
+"Angeline",
+"HuaZhu",
+"LiiLD.C",
+"Valdis",
+"Pluto",
+"Snow dream",
+"Stark",
+"Verdi",
+"Poncho",
+"JeanBonbeur",
+"Ladziuk",
+"ToM",
+"XingKong",
+"NorthPool",
+"Skutt",
+"Orcoholic",
+"Ikbencool",
+"Rici",
+"Skwc",
+"EhMuch",
+"Hinagiku",
+"ReaVeR",
+"cc",
+"Dia",
+"StiCkla",
+"GodFather",
+"Ena1337",
+"AtheistP",
+"Fukaimori",
+"Jperezimba",
+"Edward",
+"RaZeR",
+"Eye-Servant",
+"SaulApeMan",
+"NoV",
+"Cechi",
+"Rivendell",
+"Rollex",
+"Scimitar",
+"Abver",
+"InsoliTe",
+"Kol9ni4",
+"Maddc",
+"JadeRhino",
+"SoKeR",
+"Orfey",
+"znzzzzz",
+"MisterWinner",
+"BsK",
+"KishMish",
+"GraVe",
+"X3-DemoN",
+"StingPrestige",
+"HeHaBucT1",
+"Glare",
+"PriesT",
+"FranCesc",
+"Kenshin",
+"Littlein",
+"Zizo",
+"DiYeR",
+"AnB",
+"GhOosT",
+"Alaster",
+"DesTr0",
+"Shades",
+"Wojtalenko",
+"Fhra",
+"Maiev",
+"Serai",
+"一十二画",
+"Rahvin",
+"Sixb0nes",
+"Hazu",
+"JusTDoiTpLs",
+"Oli",
+"Xorc",
+"Taifun",
+"OCRaM",
+"VeS",
+"Kyossey",
+"Disengage",
+"YoungUndead",
+"XiaoShi",
+"Kndnny",
+"EKKO",
+"Verbrecher",
+"BiGMurphY",
+"Miezhiko",
+"Passion",
+"InSaNe",
+"Arek",
+"Sythren",
+"NorthDrakkar",
+"Lucker",
+"Xardas",
+"WhooLY",
+"WhiteFang",
+"BFRjonathan",
+"BurrowRush",
+"Ledgic",
+"GoDRieN",
+"Kinky",
+"DwieTwarze",
+"Hastur",
+"Pandzior",
+"F1nroD",
+"Floduke",
+"Bytake",
+"Ally",
+"Wild",
+"JohnBrzenk",
+"НееЖить",
+"Animosity",
+"Palec",
+"ThaGrinchyUNO",
+"Sultan",
+"Upsell3r",
+"Smog07",
+"GonzoTramer",
+"Sharky",
+"Kov",
+"TR-vanilla",
+"Varg",
+"Wiking",
+"SnabbaCash",
+"FAB",
+"Oxx",
+"Tristan",
+"Ternt76",
+"Hiccup",
+"Knuffy",
+"ReXBoA",
+"Chaganaga",
+"Glaive",
+"OMedRosO",
+"Pukistyle",
+"Psjwandao",
+"OldGreg",
+"KoLoss",
+"Draniq",
+"AlexMejor",
+"LucasRZ",
+"Normyy",
+"Totoro",
+"RagnarPB",
+"Gini",
+"Air",
+"Load",
+"Do0mtrain",
+"Darkmove",
+"Daron",
+"FrankyWilde",
+"Kingsta",
+"Nilsken",
+"SteiLz",
+"TLebbet",
+"Kokariko",
+"CieN",
+"Chuuti",
+"Rico",
+"Nwilliams28",
+"Gradient",
+"SOULKEEPA",
+"SoftIceCream",
+"HungryTea",
+"Flutschfinger",
+"Pawn",
+"FourthAge",
+"DSLIH",
+"Piotr Maciejczak",
+"Pleschwond",
+"K1nG 4v1L",
+"Lado",
+"Oakward",
+"SirKaOtiCz",
+"Pandabaernd",
+"Floss2xdaily",
+"EpicGamer",
+"Loiu",
+"SitioGO",
+"PainTheRisen",
+"Snolecram",
+"Adenor",
+"Raynor88",
+"PHILlikeamil",
+"Quikeet",
+"KurtRussell",
+"Erimav",
+"Spray4fun",
+"Hypareal",
+"BuzzKill",
+"DurotarThrall",
+"ThreeWayKay",
+"KaGe",
+"StarscreamR",
+"W1gan",
+"Medvedjun",
+"ForestSpirit",
+"Hitman",
+"XlorD",
+"RazerMoon",
+"Hundredkg",
+"Nightmare2077",
+"Neo",
+"Arma"
+]
+</script>
+
+<script>
+  let playersRaw = JSON.parse(document.getElementById('players-data').textContent);
+
+  const playersPool = document.getElementById('playersPool');
+  const tiers = document.querySelectorAll('.tier');
+  const output = document.getElementById('output');
+  const resetBtn = document.getElementById('resetBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const addPlayerBtn = document.getElementById('addPlayerBtn');
+  const newPlayerNameInput = document.getElementById('newPlayerName');
+
+  // Создаем элемент игрока в списке
+  function createPlayerElement(name) {
+    const div = document.createElement('div');
+    div.className = 'player';
+    div.textContent = name;
+    div.draggable = true;
+
+    // Кнопки удаления: из списка и из тира
+    // В списке игроков - кнопка удаления из списка
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '✖';
+    removeBtn.title = 'Удалить из списка';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Удаляем из playersRaw
+      playersRaw = playersRaw.filter(p => p !== name);
+      // Удаляем из DOM
+      if(div.parentElement) div.parentElement.removeChild(div);
+    });
+
+    div.appendChild(removeBtn);
+
+    div.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', name);
+      div.classList.add('dragging');
+    });
+
+    div.addEventListener('dragend', () => {
+      div.classList.remove('dragging');
+    });
+
+    return div;
+  }
+
+  // Создаем элемент игрока в тире (там нужна кнопка "удалить из тира", возвращает в список)
+  function createPlayerInTierElement(name) {
+    const div = document.createElement('div');
+    div.className = 'player';
+    div.textContent = name;
+    div.draggable = true;
+
+    // Кнопка удаления из тира (возврат в список)
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '←';
+    removeBtn.title = 'Вернуть в список';
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      div.parentElement.removeChild(div);
+      addPlayerToPool(name);
+    });
+
+    div.appendChild(removeBtn);
+
+    div.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', name);
+      div.classList.add('dragging');
+    });
+
+    div.addEventListener('dragend', () => {
+      div.classList.remove('dragging');
+    });
+
+    return div;
+  }
+
+  function addPlayerToPool(name) {
+    // Проверяем, нет ли такого в списке уже (чтобы не дублировать)
+    const existsInPool = [...playersPool.querySelectorAll('.player')].some(p => p.textContent.replace('✖','').trim() === name);
+    if (existsInPool) return;
+    const playerEl = createPlayerElement(name);
+    playersPool.appendChild(playerEl);
+  }
+
+  // Загрузка игроков в пул (с очисткой)
+  function loadPlayers() {
+    playersPool.innerHTML = '<h2>Игроки (перетащи в тир)</h2>';
+    playersRaw.forEach(name => {
+      addPlayerToPool(name);
+    });
+  }
+
+  // Обработчик дропа в тире
+  function onDrop(e) {
+    e.preventDefault();
+    const playerName = e.dataTransfer.getData('text/plain');
+    const tierDiv = e.currentTarget;
+
+    // Проверяем, есть ли игрок в тире уже
+    const existsInTier = [...tierDiv.querySelectorAll('.player')].some(p => p.textContent.replace('←','').trim() === playerName);
+    if (existsInTier) return;
+
+    // Найдем элемент игрока, который перетаскивается
+    let playerEl = document.querySelector(`.player.dragging`);
+    if (!playerEl) {
+      // Иногда можно найти по имени (если не сработало)
+      playerEl = [...document.querySelectorAll('.player')].find(el => el.textContent.includes(playerName));
+    }
+    if (!playerEl) return;
+
+    // Если перетаскиваем из пула — удаляем из пула и добавляем в тир
+    if (playerEl.parentElement === playersPool) {
+      playersPool.removeChild(playerEl);
+      const tierPlayerEl = createPlayerInTierElement(playerName);
+      tierDiv.appendChild(tierPlayerEl);
+    } else if (playerEl.parentElement.classList.contains('tier')) {
+      // Перетаскиваем между тирами — просто переместить элемент
+      tierDiv.appendChild(playerEl);
+    }
+  }
+
+  // Разрешаем дроп
+  function onDragOver(e) {
+    e.preventDefault();
+  }
+
+  tiers.forEach(tier => {
+    tier.addEventListener('drop', onDrop);
+    tier.addEventListener('dragover', onDragOver);
+  });
+
+  // Дроп обратно в пул
+  playersPool.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const playerName = e.dataTransfer.getData('text/plain');
+
+    // Если игрок уже в пуле — ничего не делать
+    const existsInPool = [...playersPool.querySelectorAll('.player')].some(p => p.textContent.replace('✖','').trim() === playerName);
+    if (existsInPool) return;
+
+    // Найдем элемент игрока, который перетаскивается
+    let playerEl = document.querySelector(`.player.dragging`);
+    if (!playerEl) {
+      playerEl = [...document.querySelectorAll('.player')].find(el => el.textContent.includes(playerName));
+    }
+    if (!playerEl) return;
+
+    // Если перетаскиваем из тира, возвращаем в пул
+    if (playerEl.parentElement.classList.contains('tier')) {
+      playerEl.parentElement.removeChild(playerEl);
+      addPlayerToPool(playerName);
+    }
+  });
+  playersPool.addEventListener('dragover', onDragOver);
+
+  // Добавление нового игрока
+  addPlayerBtn.addEventListener('click', () => {
+    const newName = newPlayerNameInput.value.trim();
+    if (newName.length === 0) return;
+    if (playersRaw.includes(newName)) {
+      alert('Игрок с таким именем уже есть в списке.');
+      return;
+    }
+    playersRaw.push(newName);
+    addPlayerToPool(newName);
+    newPlayerNameInput.value = '';
+  });
+
+  // Сброс
+  resetBtn.addEventListener('click', () => {
+    // Очистить все тиры
+    tiers.forEach(t => {
+      [...t.querySelectorAll('.player')].forEach(p => t.removeChild(p));
+    });
+    loadPlayers();
+    output.textContent = '';
+  });
+
+  // Экспорт
+  exportBtn.addEventListener('click', () => {
+    const result = {};
+    tiers.forEach(t => {
+      const tierName = t.getAttribute('data-tier');
+      result[tierName] = [...t.querySelectorAll('.player')].map(p => p.textContent.replace('←','').trim());
+    });
+    output.textContent = JSON.stringify(result, null, 2);
+  });
+
+  // Инициализация
+  loadPlayers();
+
+</script>
+</body>
+</html>
